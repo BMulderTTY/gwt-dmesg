@@ -1,5 +1,19 @@
 package org.gwt.dmesg.rebind;
 
+import com.google.gwt.core.ext.BadPropertyValueException;
+import com.google.gwt.core.ext.Generator;
+import com.google.gwt.core.ext.GeneratorContext;
+import com.google.gwt.core.ext.PropertyOracle;
+import com.google.gwt.core.ext.TreeLogger;
+import com.google.gwt.core.ext.TreeLogger.Type;
+import com.google.gwt.core.ext.UnableToCompleteException;
+import com.google.gwt.core.ext.typeinfo.JClassType;
+import com.google.gwt.core.ext.typeinfo.NotFoundException;
+import com.google.gwt.core.ext.typeinfo.TypeOracle;
+import com.google.gwt.user.rebind.ClassSourceFileComposerFactory;
+import com.google.gwt.user.rebind.SourceWriter;
+import org.apache.tapestry.util.text.LocalizedProperties;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -7,21 +21,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import org.apache.tapestry.util.text.LocalizedProperties;
-
-import com.google.gwt.core.ext.BadPropertyValueException;
-import com.google.gwt.core.ext.Generator;
-import com.google.gwt.core.ext.GeneratorContext;
-import com.google.gwt.core.ext.PropertyOracle;
-import com.google.gwt.core.ext.TreeLogger;
-import com.google.gwt.core.ext.UnableToCompleteException;
-import com.google.gwt.core.ext.TreeLogger.Type;
-import com.google.gwt.core.ext.typeinfo.JClassType;
-import com.google.gwt.core.ext.typeinfo.NotFoundException;
-import com.google.gwt.core.ext.typeinfo.TypeOracle;
-import com.google.gwt.user.rebind.ClassSourceFileComposerFactory;
-import com.google.gwt.user.rebind.SourceWriter;
+import java.util.regex.Matcher;
 
 /**
  * Dynamic message generator.
@@ -43,9 +43,13 @@ public class DynamicMessagesGenerator extends Generator {
 	/**
 	 * The token representing the message bundles.
 	 */
-	private static final String PROP_MESSAGEBUNDLES = "messageBundles";
+    private static final String PROP_MESSAGEBUNDLES = "messageBundles";
+    private static final String QUOTE = "\"";
+    private static final String QUOTE_REPLACEMENT = Matcher.quoteReplacement("\\\"");
+    private static final String NEWLINE = "\n";
+    private static final String NEWLINE_REPLACEMENT = "<br/>";
 
-	@Override
+    @Override
 	public String generate(TreeLogger logger, GeneratorContext context, String typeName)
 			throws UnableToCompleteException {
 		logger.log(Type.TRACE, "Entering DMG.generate()");
@@ -151,8 +155,10 @@ public class DynamicMessagesGenerator extends Generator {
 
 		Map<String, String> msgs = messages.getPropertyMap();
 		for (Entry<String, String> entry : msgs.entrySet()) {
-			String key = entry.getKey().replaceAll("\"", "\\\"");
-			String value = entry.getValue().replaceAll("\"", "\\\"");
+
+            String key = entry.getKey().replaceAll(QUOTE, QUOTE_REPLACEMENT);
+			String value = entry.getValue().replaceAll(NEWLINE, NEWLINE_REPLACEMENT);
+            value = value.replaceAll(QUOTE, QUOTE_REPLACEMENT);
 
 			if (first) {
 				first = false;
